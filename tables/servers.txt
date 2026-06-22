@@ -1,0 +1,21 @@
+# This file contains information about master servers.
+
+# To change displayed string in server list, use "title" option.
+
+# Do not change server identifiers (in []),
+# except for when subservers were changed or reordered
+# in such a way it requires user confirmation to correctly select a subserver
+
+[ReClassic - BR (privado)]
+ip 131.196.198.43
+port 6900
+master_version 1
+version 55
+serverType ROla
+serverEncoding Western
+gameGuard 0
+addTableFolders ROla
+charBlockSize 155
+# Cliente base: RagexeRE 20200304 (langtype 12, clientinfo version 55).
+# serverType ROla = CHUTE da era 2020/Gepard/LATAM. Se cair no login, trocar
+# pelo serverType correto do ReClassic (captura de pacote ou config da comunidade).
