@@ -2981,6 +2981,10 @@ sub look {
 		look_body => shift,
 		look_head => shift
 	);
+	# headdir e OPCIONAL (ver doc acima). Sem este default, um look(body) sem head enfileira
+	# look_head=undef -> processLook -> sendLook(body, undef) -> o packet actor_look_at aborta
+	# ("Argument head should be defined"). 0 = olhar direto (neutro).
+	$args{look_head} = 0 unless defined $args{look_head};
 	AI::queue("look", \%args);
 }
 

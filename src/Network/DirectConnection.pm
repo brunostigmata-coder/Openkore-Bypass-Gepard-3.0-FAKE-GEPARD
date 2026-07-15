@@ -611,7 +611,9 @@ sub checkConnection {
 				return if ($conState == 1.5);
 			}
 
-			$messageSender->sendPing() if (grep { $masterServer->{serverType} eq $_ } qw(ROla));
+			# ReClassic (serverType ROla deste fork) manda 0x0436 DIRETO no map server,
+			# sem ping antes (confirmado por captura da DLL). O sendPing aqui era do ROla
+			# oficial (LATAM) e desalinhava o map_login -> "Erro de Senha". Removido.
 			$messageSender->sendMapLogin($accountID, $charID, $sessionID, $accountSex2);
 			$timeout_ex{master}{time} = time;
 			$timeout_ex{master}{timeout} = $timeout{reconnect}{timeout};

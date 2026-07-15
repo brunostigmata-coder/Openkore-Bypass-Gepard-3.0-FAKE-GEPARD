@@ -1,0 +1,11 @@
+# AutoUp - Rota de up por nivel de base
+# Formato: nivel_min-nivel_max mapa [x y]
+# x e y sao opcionais (sem eles o bot caminha aleatoriamente pelo mapa)
+#
+# Exemplo de rota Novice -> Swordman:
+#
+1-25   prt_fild05
+26-40  pay_fild01
+41-60  moc_fild16
+61-80  gef_fild14
+81-99  mjolnir_02

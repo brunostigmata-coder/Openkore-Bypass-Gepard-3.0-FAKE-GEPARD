@@ -4,11 +4,11 @@
 ######## Login options and server-specific options ########
 
 master ReClassic - BR (privado)
-server
+server 0
 username 
 password 
-loginPinCode
-char 0
+loginPinCode 
+char 
 otpSeed
 
 # Poseidon Settings: https://openkore.com/wiki/Poseidon
@@ -22,14 +22,14 @@ forceMapIP
 
 # 1 = hook into RO client, 2 = Act as stand-alone proxy, proxy = act as true proxy
 # https://openkore.com/wiki/XKore
-XKore 0
+XKore 1
 XKore_port 2350
 XKore_dll NetRedirect.dll
 XKore_injectDLL 0
 XKore_autoAttachIfOneExe 1
 XKore_silent 1
 XKore_bypassBotDetection 0
-XKore_exeName ReClassic.exe
+XKore_exeName ReClassic_KORE1.exe
 
 # XKore 2 / Proxy configuration
 XKore_listenIp 127.0.0.1
@@ -41,7 +41,7 @@ XKore_ID
 
 # It is not advised to set secureAdminPassword if you're using Xkore 2
 secureAdminPassword 1
-adminPassword noweshee
+adminPassword friwauya
 callSign
 commandPrefix ;
 callSignGM 0
@@ -201,19 +201,19 @@ followSitAuto 0
 followBot 0
 
 itemsTakeAuto 2
-itemsTakeAuto_party 0
+itemsTakeAuto_party 1
 itemsGatherAuto 2
 itemsGatherAuto_notInTown 0
 itemsGatherAutoMinPlayerDistance 6
 itemsGatherAutoMinPortalDistance 5
-itemsMaxWeight 89
+itemsMaxWeight 69
 itemsMaxWeight_sellOrStore 48
 itemsMaxNum_sellOrStore 99
 cartMaxWeight 7900
 itemsTakeGreed 0
 itemsCheckWeight 1
 
-lockMap prt_fild05
+lockMap pay_fild08
 lockMap_x
 lockMap_y
 lockMap_randX
@@ -286,25 +286,25 @@ shop_useSkill 1
 buyerShopAuto_open 0
 buyerShop_random 0
 
-sitAuto_hp_lower 40
-sitAuto_hp_upper 100
+sitAuto_hp_lower 0
+sitAuto_hp_upper 0
 sitAuto_sp_lower 0
 sitAuto_sp_upper 0
 sitAuto_follow 0
 sitAuto_over_50 0
-sitAuto_idle 1
+sitAuto_idle 0
 sitAuto_look
 sitAuto_look_from_wall
 sitAuto_look_delay
 sitTensionRelax 0
 
 statsAddAuto 0
-statsAddAuto_list
+statsAddAuto_list 20 dex, 30 agi, 30 dex, 50 agi, 30 str, 20 vit, 70 agi, 50 str, 44 dex, 88 agi, 82 str, 40 vit
 statsAddAuto_dontUseBonus 0
 statsAdd_over_99 1
 
 skillsAddAuto 0
-skillsAddAuto_list
+skillsAddAuto_list SM_SWORD 1, SM_RECOVERY 10, SM_BASH 10, SM_PROVOKE 5, SM_ENDURE 4, KN_ONEHAND 1, KN_RIDING 1
 
 tankMode 0
 tankModeTarget
@@ -346,17 +346,17 @@ dealAuto 1
 dealAuto_names
 dealMaxItems 10
 partyAuto 1
-partyAutoShare 0
+partyAutoShare 1
 partyAutoShareItem 0
 partyAutoShareItemDiv 0
-guildAutoDeny 1
+guildAutoDeny 0
 attendanceAuto 1
 
 verbose 1
 showDomain 0
 showDomain_NPC parseMsg_presence
 showDomain_Shop list
-squelchDomains
+squelchDomains effect
 verboseDomains
 beepDomains
 beepDomains_notInTown
@@ -599,32 +599,11 @@ pet_return 20
 # You can copy & paste any block multiple times. So if you want to
 # configure two attack skills, just duplicate the attackSkillSlot block.
 
-attackSkillSlot {
-	lvl
+attackSkillSlot 5 {
+	lvl 5
 	dist 1
-	maxDist 1
-	maxCastTime 0
-	minCastTime 0
-	previousDamage
-	monsters
-	notMonsters
-	maxAttempts 0
-	maxUses 0
-	isSelfSkill 0
-	isStartSkill 0
-	equip_topHead
-	equip_midHead
-	equip_lowHead
-	equip_leftHand
-	equip_rightHand
-	equip_leftAccessory
-	equip_rightAccessory
-	equip_robe
-	equip_armor
-	equip_shoes
-	equip_arrow
-	# [checkSelfCondition]
-	# [checkMonsterCondition]
+	sp > 8
+	maxUses 1
 }
 
 attackComboSlot {
@@ -721,8 +700,8 @@ equipAuto {
 	# [checkMonsterCondition]
 }
 
-useSelf_item {
-	dcOnEmpty 0
+useSelf_item 569, 501 {
+	hp < 50%
 	# [checkSelfCondition]
 }
 
@@ -746,16 +725,16 @@ buyAuto {
 	# [checkSelfCondition]
 }
 
-sellAuto 0
-sellAuto_npc
+sellAuto 1
+sellAuto_npc payon 159 96
 sellAuto_standpoint
 sellAuto_distance 3
-sellAuto_maxDistance
-sellAuto_npc_steps s
+sellAuto_maxDistance 3
+sellAuto_npc_steps
 
-storageAuto 0
+storageAuto 1
 storageAuto_onStart 0
-storageAuto_npc
+storageAuto_npc payon 181 104
 storageAuto_standpoint
 storageAuto_distance 3
 storageAuto_maxDistance
@@ -764,7 +743,7 @@ storageAuto_type 0
 storageAuto_npc_steps
 storageAuto_password
 rodexMaxItems 5
-storageAuto_keepOpen 0
+storageAuto_keepOpen 1
 storageAuto_useChatCommand
 storageAuto_useItem 0
 storageAuto_useItem_item
@@ -773,7 +752,7 @@ relogAfterStorage 0
 minStorageZeny 50
 
 npcTimeResponse
-npcWrongStepsMethod 0
+npcWrongStepsMethod 2
 
 getAuto {
 	minAmount

@@ -14,6 +14,7 @@ version 55
 serverType ROla
 serverEncoding Western
 gameGuard 0
+pinCode 1
 addTableFolders ROla
 charBlockSize 155
 # Cliente base: RagexeRE 20200304 (langtype 12, clientinfo version 55).

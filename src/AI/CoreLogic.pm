@@ -1413,8 +1413,8 @@ sub processAutoStorage {
 						# Use config steps based on storageAuto_npc_type
 						if ($config{'storageAuto_npc_type'} eq "" || $config{'storageAuto_npc_type'} eq "1") {
 							warning T("Warning storageAuto has changed. Please read News.txt\n") if ($config{'storageAuto_npc_type'} eq "");
-							if (grep { $masterServer->{serverType} eq $_ } qw(ROla) && $config{'storageAuto_npc'} =~ /prontera|payon/i) {
-    							$steps = "c r2";
+							if ((grep { $masterServer->{serverType} eq $_ } qw(ROla)) && $config{'storageAuto_npc'} =~ /prontera|payon/i) {
+    							$steps = "c r1";
 								debug "Using standard ROla npc storage steps.\n", "npc";
 							} else {
 								$steps = "c r1";

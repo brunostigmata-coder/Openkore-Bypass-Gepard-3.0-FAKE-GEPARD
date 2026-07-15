@@ -136,6 +136,7 @@ HookImportedFunction (HMODULE hModule,		// Module to intercept calls from
 		pfnOriginalProc = GetProcAddress(GetModuleHandle(FunctionModule), FunctionName);
 	}
 	if(!pfnOriginalProc) return NULL;
+	debug ("  hook %s (%s): orig=0x%p -> new=0x%p\n", FunctionName, FunctionModule, pfnOriginalProc, pfnNewProc);
 
 	pDosHeader = (PIMAGE_DOS_HEADER)hModule;
 
@@ -188,30 +189,46 @@ HookImportedFunction (HMODULE hModule,		// Module to intercept calls from
 		pThunk++;
 	}
 
-	SYSTEM_INFO si;
-	DWORD i;
-	byte *data = NULL;
-	GetSystemInfo(&si);
-	LPVOID lpMem = si.lpMinimumApplicationAddress;
-	while (lpMem < si.lpMaximumApplicationAddress) {
-		VirtualQuery(lpMem, &mbi_thunk,sizeof(MEMORY_BASIC_INFORMATION));
+	debug ("  hook %s: IAT ok\n", FunctionName);
 
-		if ((DWORD)mbi_thunk.BaseAddress <= (DWORD)pDosHeader + pNTHeader->OptionalHeader.SizeOfImage
-			&& mbi_thunk.State == MEM_COMMIT && mbi_thunk.RegionSize > 0 && !(mbi_thunk.Protect & PAGE_GUARD)) {
+	// -------------------------------------------------------------------------
+	// VARREDURA BRUTE-FORCE DA IMAGEM -- DESLIGADA (era o crash).
+	// O codigo antigo varria TODA a memoria da imagem byte-a-byte procurando
+	// qualquer DWORD == ponteiro da funcao original e sobrescrevia com o novo.
+	// Isso: (1) troca protecao de paginas de CODIGO p/ RW e de volta, (2)
+	// corrompe qualquer valor que POR COINCIDENCIA seja igual ao ponteiro (na
+	// stack, jump tables, structs), (3) roda O(imagem inteira) por hook. Em
+	// Windows moderno (DEP/CFG/ASLR) isso fecha o cliente.
+	// O hook da IAT acima + o hook de GetProcAddress (MyGetProcAddress) ja
+	// cobrem import estatico E resolucao dinamica, entao a varredura e
+	// desnecessaria. Fica atras de um flag caso um dia precise voltar.
+	static const bool bruteForceScan = false;
+	if (bruteForceScan) {
+		SYSTEM_INFO si;
+		DWORD i;
+		byte *data = NULL;
+		GetSystemInfo(&si);
+		LPVOID lpMem = si.lpMinimumApplicationAddress;
+		while (lpMem < si.lpMaximumApplicationAddress) {
+			VirtualQuery(lpMem, &mbi_thunk,sizeof(MEMORY_BASIC_INFORMATION));
 
-			if (VirtualProtect(mbi_thunk.BaseAddress, mbi_thunk.RegionSize, PAGE_READWRITE, &mbi_thunk.Protect)) {
-				data = (byte*)mbi_thunk.BaseAddress;
-				for (i = 0; i < mbi_thunk.RegionSize - 3; i++) {
+			if ((DWORD)mbi_thunk.BaseAddress <= (DWORD)pDosHeader + pNTHeader->OptionalHeader.SizeOfImage
+				&& mbi_thunk.State == MEM_COMMIT && mbi_thunk.RegionSize > 0 && !(mbi_thunk.Protect & PAGE_GUARD)) {
 
-					if (*(DWORD*)(data+i) == (DWORD)pfnOriginalProc) {
-						*(DWORD*)(data+i) = (DWORD)pfnNewProc;
+				if (VirtualProtect(mbi_thunk.BaseAddress, mbi_thunk.RegionSize, PAGE_READWRITE, &mbi_thunk.Protect)) {
+					data = (byte*)mbi_thunk.BaseAddress;
+					for (i = 0; i < mbi_thunk.RegionSize - 3; i++) {
+
+						if (*(DWORD*)(data+i) == (DWORD)pfnOriginalProc) {
+							*(DWORD*)(data+i) = (DWORD)pfnNewProc;
+						}
+
 					}
-					
+				VirtualProtect(mbi_thunk.BaseAddress, mbi_thunk.RegionSize,mbi_thunk.Protect, NULL);
 				}
-			VirtualProtect(mbi_thunk.BaseAddress, mbi_thunk.RegionSize,mbi_thunk.Protect, NULL);
 			}
+			lpMem = MakePtr(LPVOID, mbi_thunk.BaseAddress, mbi_thunk.RegionSize+1);
 		}
-		lpMem = MakePtr(LPVOID, mbi_thunk.BaseAddress, mbi_thunk.RegionSize+1);
 	}
 
 	return pfnOriginalProc;
@@ -228,13 +245,19 @@ debugInit ()
 void
 debug (const char *format, ...)
 {
-	if (enableDebug) {
-		va_list ap;
-		char msg[1024];
+	if (!enableDebug)
+		return;
 
-		va_start (ap, format);
-		vsprintf (msg, format, ap);
-		va_end (ap);
-		WriteConsole (GetStdHandle (STD_OUTPUT_HANDLE), msg, strlen (msg), NULL, NULL);
-	}
+	va_list ap;
+	char msg[1024];
+
+	va_start (ap, format);
+	vsnprintf (msg, sizeof (msg), format, ap);
+	va_end (ap);
+
+	// OutputDebugString NAO e bufferizado -> a ultima linha sobrevive mesmo que
+	// o cliente crashe logo em seguida (abra o DebugView/DbgView.exe pra ver).
+	// O console (WriteConsole) pode perder as ultimas linhas num crash.
+	OutputDebugStringA (msg);
+	WriteConsole (GetStdHandle (STD_OUTPUT_HANDLE), msg, strlen (msg), NULL, NULL);
 }

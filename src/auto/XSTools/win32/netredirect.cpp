@@ -528,11 +528,16 @@ static int isNT = 0;
 static int started = 0;
 static HINSTANCE hDll = 0;
 static HHOOK hookID = 0;
+static volatile LONG g_initDone = 0;   // guard: init() deve rodar UMA vez so
 
 static int
 start ()
 {
-	init ();
+	// Guard de init unico: tanto o thread deferido do DllMain quanto o callback
+	// do SetWindowsHookEx podem chegar aqui. InterlockedExchange garante que o
+	// init() (WSAStartup + hook da IAT + thread) rode exatamente uma vez.
+	if (InterlockedExchange (&g_initDone, 1) == 0)
+		init ();
 	return 0;
 }
 
@@ -608,17 +613,22 @@ DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID _Reserved)
 
 
 		#ifndef TESTING_INJECT9x
-		OSVERSIONINFO version;
+		// Win9x morreu; sempre NT.
+		isNT = 1;
 
-		version.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-		GetVersionEx (&version);
-		isNT = version.dwPlatformId == VER_PLATFORM_WIN32_NT;
-
-		// If we're injected on Win9x, then init() must
-		// be called from a different function (see above).
-		// This is because Kore LoadLibrary() this dll when on Win9x.
-		if (isNT)
-			init ();
+		// NAO chamar init() aqui. DllMain roda sob o LOADER LOCK do Windows, e
+		// init() faz WSAStartup + hook da IAT + CreateThread -- trabalho pesado
+		// que trava/crasha o cliente quando feito sob o lock (era o "RO crashes"
+		// da linha 552). Deferimos pra um thread: o loader so o inicia DEPOIS que
+		// o DllMain retorna e o lock e liberado. O guard em start() (g_initDone)
+		// impede init duplo se o caminho do SetWindowsHookEx tambem disparar.
+		DisableThreadLibraryCalls (hInstance);   // nao usamos THREAD_ATTACH/DETACH
+		{
+			DWORD tid;
+			HANDLE h = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) start, NULL, 0, &tid);
+			if (h)
+				CloseHandle (h);
+		}
 		#endif
 		break;
 
